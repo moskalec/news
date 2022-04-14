@@ -7,3 +7,6 @@ class Post(models.Model):
     creation_date = models.DateField()
     amount_of_upvotes = models.IntegerField()
     # author_name
+
+    def __str__(self):
+        return self.title
