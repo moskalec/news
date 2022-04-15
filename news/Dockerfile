@@ -8,5 +8,6 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 COPY . .meta/packages ./
 RUN pip install -r .meta/packages
+RUN ./manage.py migrate
 
 COPY . .
