@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  web:
+    build: ./news
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./news/:/usr/src/news/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+    - db
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=news
+      - POSTGRES_PASSWORD=news
+      - POSTGRES_DB=news
+volumes:
+  postgres_data:
