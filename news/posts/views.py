@@ -1,38 +1,143 @@
-from rest_framework.viewsets import ModelViewSet
-from .models import Post, UserPostRelation, Comment
-from .serializers import PostsSerializer, UserPostsRelationViewSerializer, CommentSerializer
-from rest_framework.mixins import UpdateModelMixin
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.views.generic.base import TemplateView
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
+from django.contrib import messages
+from slugify import slugify
+from django.http import HttpResponseRedirect
+from posts.forms import CreatePostForm, CreateCommentForm
+from posts.models import Post, Category, Comment, Tag
+from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 
-class PostViewSet(ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class HomePageView(TemplateView):
+    template_name = "posts/index.tpl"
 
-    def perform_create(self, serializer):
-        serializer.validated_data['author_name'] = self.request.user
-        serializer.save()
-
-
-class PostCommentRelationView(UpdateModelMixin, GenericViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    lookup_field = 'post'
-
-    def get_object(self):
-        obj, _ = Comment.objects.get_or_create(user=self.request.user, post_id=self.kwargs['post'])
-        return obj
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_posts'] = Post.objects.all().order_by('-created')[1:5]
+        context['featured_post'] = Post.objects.all().order_by('-users_like').first()
+        context['categories'] = Category.objects.all().order_by('-title')
+        context['tags'] = Tag.objects.all().order_by('-title')
+        return context
 
 
-class UserPostsRelationView(UpdateModelMixin, GenericViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = UserPostRelation.objects.all()
-    serializer_class = UserPostsRelationViewSerializer
-    lookup_field = 'post'
+class CategoriesListView(ListView):
+    model = Category
 
-    def get_object(self):
-        obj, _ = UserPostRelation.objects.get_or_create(user=self.request.user, post_id=self.kwargs['post'])
-        return obj
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        return context
+
+
+class CategoryDetailView(DetailView):
+    model = Category
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+
+class PostsListView(ListView):
+    model = Post
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        if 'category_slug' in self.kwargs:
+            category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
+            posts = Post.objects.all().filter(category=category).order_by('-created')
+        elif 'tag_slug' in self.kwargs:
+            tag = get_object_or_404(Tag, slug=self.kwargs['tag_slug'])
+            posts = Post.objects.all().filter(tags__slug__contains=tag).order_by('-created')
+        else:
+            posts = Post.objects.all().order_by('-created')
+        context = super().get_context_data(object_list=posts, **kwargs)
+        context['latest_posts'] = Post.objects.all()[:5]
+        context['categories'] = Category.objects.all()
+        context['category'] = locals().get('category', '')
+        context['tags'] = locals().get('tag', '')
+        return context
+
+
+class PostDetailView(DetailView):
+    model = Post
+    form_class = CreateCommentForm
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            try:
+                parent_id = int(request.POST.get('parent_id'))
+            except Exception:
+                parent_id = None
+            if parent_id:
+                parent_obj = Comment.objects.get(id=parent_id)
+                if parent_obj:
+                    replay_comment = form.save(commit=False)
+                    replay_comment.parent = parent_obj
+            new_comment = form.save(commit=False)
+            new_comment.post = self.get_object()
+            new_comment.user = request.user
+            new_comment.save()
+
+            return HttpResponseRedirect(self.request.path_info)
+
+        return render(request, self.template_name, {'form': form})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comment.objects.filter(active=True)
+        context['comment_form'] = self.form_class()
+        return context
+
+
+@login_required
+def post_create(request):
+    if request.method == 'POST':
+        form = CreatePostForm(data=request.POST, files=request.FILES)
+        if form.is_valid():
+            new_item = form.save(commit=False)
+            new_item.author_name = request.user
+            tags = []
+            for tag in request.POST.dict()['tags'].split(","):
+                obj, _ = Tag.objects.get_or_create(title=tag.strip(), slug=slugify(tag.strip()))
+                tags.append(obj)
+            new_item.save()
+            new_item.tags.add(*tags)
+            messages.success(request, 'Post added successfully')
+            return redirect(new_item)
+    else:
+        form = CreatePostForm(data=request.GET)
+    return render(request,
+                  'posts/create.html',
+                  {'form': form})
+
+
+@require_POST
+def like_dislike(request):
+    if request.method == "POST":
+        post_id = request.POST.get('post_id')
+        action = request.POST.get('action')
+        if post_id and action:
+            try:
+                post = Post.objects.get(id=post_id)
+                if action == 'like':
+                    if post.users_like.filter(username=request.user.username).exists():
+                        post.users_like.remove(request.user)
+                    else:
+                        post.users_like.add(request.user)
+                        post.dislike.remove(request.user)
+                elif action == 'dislike':
+                    if post.dislike.filter(username=request.user.username).exists():
+                        post.dislike.remove(request.user)
+                    else:
+                        post.dislike.add(request.user)
+                        post.users_like.remove(request.user)
+                return HttpResponseRedirect(post.get_absolute_url())
+            except Exception:
+                pass
+        return HttpResponseRedirect(reverse('posts:index'))

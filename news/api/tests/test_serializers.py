@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from posts.models import Post, UserPostRelation
-from posts.serializers import PostsSerializer
+from api.serializers import PostsSerializer
 from django.contrib.auth.models import User
 
 

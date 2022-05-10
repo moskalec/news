@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from rest_framework import status
 
 from posts.models import Post, UserPostRelation, Comment
-from posts.serializers import PostsSerializer
+from api.serializers import PostsSerializer
 
 
 class PostsApiTestCase(APITestCase):
@@ -45,7 +45,7 @@ class PostsApiTestCase(APITestCase):
         data = {
             "title": 'some changed title',
             "link": self.post1.link,
-            "creation_date": self.post1.creation_date
+            "creation_date": self.post1.created
         }
         json_data = json.dumps(data)
         response = self.client.put(url, data=json_data, content_type='application/json')

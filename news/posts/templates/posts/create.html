@@ -1,0 +1,13 @@
+{% extends "core/base.html" %}
+{% block title %}Create post{% endblock %}
+{% block content %}
+   <h1>Create post</h1>
+    <form method="post" enctype="multipart/form-data">
+        {{ form.as_p }}
+        {% csrf_token %}
+        <label for="tags">Tags:</label>
+        <input type="text" id="tags" name="tags" />
+        <input type="submit" value="Post it!">
+    </form>
+<a href="{{request.META.HTTP_REFERER|escape}}">Back</a>
+{% endblock %}
