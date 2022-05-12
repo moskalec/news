@@ -1,10 +1,15 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
-from .models import Profile
+from .models import Profile, Contact
 from django.contrib import messages
+from django.views.generic.detail import DetailView
+from django.contrib.auth.models import User
+from django.views.generic.list import ListView
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 
 def register(request):
@@ -78,3 +83,71 @@ def edit(request):
                   'account/edit.html',
                   {'user_form': user_form,
                    'profile_form': profile_form})
+
+
+# @require_POST
+# def user_follow(request):
+#     if request.method == "POST":
+#         user_id = request.POST.get('user_id')
+#         action = request.POST.get('action')
+#         if user_id and action:
+#             try:
+#                 user = User.objects.get(id=user_id)
+#                 if action == 'follow':
+#                     Contact.objects.get_or_create(
+#                         user_from=request.user,
+#                         user_to=user)
+#                 else:
+#                     Contact.objects.filter(user_from=request.user,
+#                                            user_to=user).delete()
+#                 return HttpResponseRedirect(user.get_absolute_url())
+#             except Exception:
+#                 pass
+#         return HttpResponseRedirect(reverse('posts:index'))
+
+
+class UserDetailView(DetailView):
+    template_name = 'account/user/detail.html'
+    model = User
+    slug_field = 'username'
+
+    def post(self, request, *args, **kwargs):
+        user_id = request.POST.get('user_id')
+        action = request.POST.get('action')
+        if user_id and action:
+            try:
+                user = User.objects.get(id=user_id)
+                if request.user == user:
+                    return HttpResponseRedirect(user.get_absolute_url())
+                if action == 'follow':
+                    Contact.objects.get_or_create(
+                        user_from=request.user,
+                        user_to=user)
+                else:
+                    Contact.objects.filter(user_from=request.user,
+                                           user_to=user).delete()
+                return HttpResponseRedirect(user.get_absolute_url())
+            except Exception:
+                pass
+        return HttpResponseRedirect(reverse('posts:index'))
+
+    # def get_queryset(self):
+    # user = get_object_or_404(User, username=self.args['username'])
+    # return user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = 'people'
+        return context
+
+
+class UserListView(ListView):
+    template_name = 'account/user/list.html'
+    model = User
+    queryset = User.objects.filter(is_active=True)
+    context_object_name = 'users'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['section'] = 'people'
+        return context

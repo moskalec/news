@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'custom/login.css' %}">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+{% include 'core/includes/header.html' %}
+{% include 'core/includes/header2.html' %}
+
+<div class="container">
+  <div class="row">
+<!--    <div class="col-10">-->
+        {% include 'core/includes/messages.html' %}
+        {% block content %}
+        {% endblock %}
+<!--    </div>-->
+<!--    <div class="col-2">-->
+<!--    </div>-->
+  </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+</script>
+        {% block domready %}
+        {% endblock %}
+<script>
+    });
+</script>
+</body>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+{% include 'core/includes/footer.html' %}
+</html>
+<!---->
+
+<!---->

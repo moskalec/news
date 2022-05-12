@@ -10,7 +10,8 @@ app_name = 'posts'
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='index'),
-    path('like/', views.like_dislike, name='like_dislike'),
+    # path('like/', views.like_dislike, name='like_dislike'),
+    # path('like/', PostsListView.as_view(), name='like_dislike'),
     path('posts', PostsListView.as_view(), name='post-list'),
     path('category/', CategoriesListView.as_view(), name='category-list'),
     path('create/', views.post_create, name='create'),

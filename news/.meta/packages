@@ -1,8 +1,13 @@
 APScheduler==3.9.1
+certifi==2021.10.8
 coverage==6.3.2
 Django==4.0.4
+django-extensions==3.1.5
 djangorestframework==3.13.1
+easy-thumbnails==2.8.1
 ipdb==0.13.9
 Jinja2==3.1.2
 Pillow==9.1.0
 psycopg2-binary==2.9.3
+pyOpenSSL==22.0.0
+Werkzeug==2.1.2

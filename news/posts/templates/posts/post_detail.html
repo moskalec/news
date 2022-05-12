@@ -12,15 +12,15 @@
     <ol>Updated: {{ object.updated }}</ol>
     <ol>Author name: {{ object.author_name }}</ol>
 
-    {% with total_likes=object.users_like.count users_like=object.users_like.all total_dislikes=object.dislike.count %}
+    {% with total_likes=object.like.count like=object.like.all total_dislikes=object.dislike.count %}
         <ol>Likes: {{ total_likes }}</ol>
         <ol>Dislikes: {{ total_dislikes }}</ol>
 
 
-    <form action="{% url 'posts:like_dislike' %}" method="post">
+    <form action="." method="post">
         {% csrf_token %}
         <div class="buttons has-addons">
-            {% if user in object.users_like.all %}
+            {% if user in object.like.all %}
                 <button class="btn btn-light" name="action" value="like">Like</button>
             {% else %}
                 <button class="btn btn-success" name="action" value="like">Like</button>
@@ -32,6 +32,7 @@
             {% endif %}
         </div>
         <input type="hidden" name="post_id" value="{{ object.id }}">
+        <input type="hidden" name="current" value="{{ request.get_full_path }}">
     </form>
 
 

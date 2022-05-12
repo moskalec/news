@@ -19,9 +19,10 @@ class HomePageView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_posts'] = Post.objects.all().order_by('-created')[1:5]
-        context['featured_post'] = Post.objects.all().order_by('-users_like').first()
+        context['featured_post'] = Post.objects.all().order_by('-like').first()
         context['categories'] = Category.objects.all().order_by('-title')
         context['tags'] = Tag.objects.all().order_by('-title')
+        context['section'] = 'home'
         return context
 
 
@@ -44,23 +45,53 @@ class CategoryDetailView(DetailView):
 
 class PostsListView(ListView):
     model = Post
-    paginate_by = 10
+    paginate_by = 3
 
     def get_context_data(self, **kwargs):
         if 'category_slug' in self.kwargs:
             category = get_object_or_404(Category, slug=self.kwargs['category_slug'])
             posts = Post.objects.all().filter(category=category).order_by('-created')
+            section = 'by_category'
         elif 'tag_slug' in self.kwargs:
             tag = get_object_or_404(Tag, slug=self.kwargs['tag_slug'])
             posts = Post.objects.all().filter(tags__slug__contains=tag).order_by('-created')
+            section = 'by_tag'
         else:
             posts = Post.objects.all().order_by('-created')
+            section = 'all_posts'
         context = super().get_context_data(object_list=posts, **kwargs)
+        context['section'] = section
         context['latest_posts'] = Post.objects.all()[:5]
-        context['categories'] = Category.objects.all()
-        context['category'] = locals().get('category', '')
-        context['tags'] = locals().get('tag', '')
+        # context['categories'] = Category.objects.all()
+        # if 'category' in locals():
+        #     context['category'] = category
+        # if 'tag' in locals():
+        #     context['tags'] = tag
         return context
+
+    def post(self, request, *args, **kwargs):
+        # if request.method == "POST":
+        post_id = request.POST.get('post_id')
+        action = request.POST.get('action')
+        if post_id and action:
+            try:
+                post = Post.objects.get(id=post_id)
+                if action == 'like':
+                    if post.like.filter(username=request.user.username).exists():
+                        post.like.remove(request.user)
+                    else:
+                        post.like.add(request.user)
+                        post.dislike.remove(request.user)
+                elif action == 'dislike':
+                    if post.dislike.filter(username=request.user.username).exists():
+                        post.dislike.remove(request.user)
+                    else:
+                        post.dislike.add(request.user)
+                        post.like.remove(request.user)
+                return redirect(request.POST.get('current'))
+            except Exception:
+                pass
+        return HttpResponseRedirect(reverse('posts:index'))
 
 
 class PostDetailView(DetailView):
@@ -68,6 +99,27 @@ class PostDetailView(DetailView):
     form_class = CreateCommentForm
 
     def post(self, request, *args, **kwargs):
+        post_id = request.POST.get('post_id')
+        action = request.POST.get('action')
+        if post_id and action:
+            try:
+                post = Post.objects.get(id=post_id)
+                if action == 'like':
+                    if post.like.filter(username=request.user.username).exists():
+                        post.like.remove(request.user)
+                    else:
+                        post.like.add(request.user)
+                        post.dislike.remove(request.user)
+                elif action == 'dislike':
+                    if post.dislike.filter(username=request.user.username).exists():
+                        post.dislike.remove(request.user)
+                    else:
+                        post.dislike.add(request.user)
+                        post.like.remove(request.user)
+            except Exception:
+                pass
+            return redirect(request.POST.get('current'))
+
         form = self.form_class(request.POST)
         if form.is_valid():
             try:
@@ -114,30 +166,32 @@ def post_create(request):
         form = CreatePostForm(data=request.GET)
     return render(request,
                   'posts/create.html',
-                  {'form': form})
+                  {'form': form,
+                   'section': 'create_post'})
 
 
-@require_POST
-def like_dislike(request):
-    if request.method == "POST":
-        post_id = request.POST.get('post_id')
-        action = request.POST.get('action')
-        if post_id and action:
-            try:
-                post = Post.objects.get(id=post_id)
-                if action == 'like':
-                    if post.users_like.filter(username=request.user.username).exists():
-                        post.users_like.remove(request.user)
-                    else:
-                        post.users_like.add(request.user)
-                        post.dislike.remove(request.user)
-                elif action == 'dislike':
-                    if post.dislike.filter(username=request.user.username).exists():
-                        post.dislike.remove(request.user)
-                    else:
-                        post.dislike.add(request.user)
-                        post.users_like.remove(request.user)
-                return HttpResponseRedirect(post.get_absolute_url())
-            except Exception:
-                pass
-        return HttpResponseRedirect(reverse('posts:index'))
+# @require_POST
+# def like_dislike(request):
+#     if request.method == "POST":
+#         post_id = request.POST.get('post_id')
+#         action = request.POST.get('action')
+#         if post_id and action:
+#             try:
+#                 post = Post.objects.get(id=post_id)
+#                 if action == 'like':
+#                     if post.like.filter(username=request.user.username).exists():
+#                         post.like.remove(request.user)
+#                     else:
+#                         post.like.add(request.user)
+#                         post.dislike.remove(request.user)
+#                 elif action == 'dislike':
+#                     if post.dislike.filter(username=request.user.username).exists():
+#                         post.dislike.remove(request.user)
+#                     else:
+#                         post.dislike.add(request.user)
+#                         post.like.remove(request.user)
+#                 # return HttpResponseRedirect(post.get_absolute_url())
+#                 return redirect(request.path_info)
+#             except Exception:
+#                 pass
+#         return HttpResponseRedirect(reverse('posts:index'))

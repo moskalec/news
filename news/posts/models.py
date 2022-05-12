@@ -44,9 +44,10 @@ class Category(models.Model):
 
 class Post(models.Model):
     title = models.CharField(max_length=255, unique=True, verbose_name=_('Title'))
-    content = models.TextField(verbose_name=_('Content'))
+    content = models.TextField(verbose_name=_('Content'), blank=True)
     slug = models.CharField(max_length=150, unique=True, blank=True, verbose_name=_('Slug'))
     image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
+    url = models.URLField(blank=True, null=True)
     created = models.DateTimeField(auto_now=True,
                                    verbose_name=_('Created at'))
     updated = models.DateTimeField(null=True, blank=True, verbose_name=_('Updated at'))
@@ -60,9 +61,9 @@ class Post(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
-    users_like = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                        related_name='posts_liked',
-                                        blank=True)
+    like = models.ManyToManyField(settings.AUTH_USER_MODEL,
+                                  related_name='posts_liked',
+                                  blank=True)
     dislike = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                      related_name='posts_disliked',
                                      blank=True)

@@ -1,0 +1,24 @@
+{% extends "core/base.html" %}
+{% load thumbnail %}
+{% block title %}{{ user }}{% endblock %}
+{% block content %}
+<h1>{{ user }}</h1>
+       <img src="{% thumbnail user.profile.photo 180x180 %}">
+     {% with total_followers=user.followers.count %}
+         <span>{{ total_followers }}</span>
+         follower{{ total_followers|pluralize }}
+        {% if request.user != user %}
+            <form action="." method="post">
+                {% csrf_token %}
+                <button class="btn btn-{% if request.user in user.followers.all %}light{% else %}success{% endif %}" name="action" value="{% if request.user in user.followers.all %}un{% endif %}follow">
+                    {% if request.user not in user.followers.all %}
+                        Follow
+                    {% else %}
+                        Unfollow
+                    {% endif %}
+                </button>
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+            </form>
+        {% endif %}
+     {% endwith %}
+{% endblock %}

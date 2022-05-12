@@ -7,7 +7,7 @@ from posts.models import Post, UserPostRelation, Comment, Category, Tag
 class PostAdmin(admin.ModelAdmin):
     list_display = ['title', 'created', 'updated', 'author_name', 'content']
     list_filter = ['title', 'created', 'updated']
-    prepopulated_fields = {'slug': ('title',)}
+    # prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(Category)
