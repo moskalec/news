@@ -21,4 +21,22 @@
             </form>
         {% endif %}
      {% endwith %}
+    {% for follower in followers %}
+        <a href="{{ follower.user_from.get_absolute_url }}">
+            <img src="{% thumbnail follower.user_from.profile.photo 180x180 %}">
+        </a>
+        <a href="{{ follower.user_from.get_absolute_url }}" class="title">
+            {{ follower.user_from.get_full_name }}
+        </a>
+    {% endfor %}
+    <br>
+    Contacts log:<br>
+    {% for follower in followers %}
+        <hr>
+        <a href="{{ follower.user_from.get_absolute_url }}">{{ follower.user_from }}</a>
+        start follow
+        <a href="{{ follower.user_to.get_absolute_url }}">{{ follower.user_to }}</a>
+        since {{ follower.created }}
+    {% endfor %}
+    <hr>
 {% endblock %}

@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
@@ -16,12 +16,8 @@ def register(request):
     if request.method == 'POST':
         user_form = UserRegistrationForm(request.POST)
         if user_form.is_valid():
-            # Create a new user object but avoid saving it yet
             new_user = user_form.save(commit=False)
-            # Set the chosen password
-            new_user.set_password(
-                user_form.cleaned_data['password'])
-            # Save the User object
+            new_user.set_password(user_form.cleaned_data['password'])
             new_user.save()
             Profile.objects.create(user=new_user)
             return render(request,
@@ -111,7 +107,7 @@ class UserDetailView(DetailView):
     model = User
     slug_field = 'username'
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         user_id = request.POST.get('user_id')
         action = request.POST.get('action')
         if user_id and action:
@@ -131,13 +127,10 @@ class UserDetailView(DetailView):
                 pass
         return HttpResponseRedirect(reverse('posts:index'))
 
-    # def get_queryset(self):
-    # user = get_object_or_404(User, username=self.args['username'])
-    # return user
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['section'] = 'people'
+        context['followers'] = Contact.objects.filter(user_to=self.get_object())
         return context
 
 

@@ -10,6 +10,11 @@ class Tag(models.Model):
     title = models.CharField(max_length=100)
     slug = models.CharField(max_length=150, unique=True, blank=True, verbose_name=_('Slug'))
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse('posts:post-list', kwargs={'tag_slug': self.slug})
 

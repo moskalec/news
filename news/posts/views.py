@@ -10,7 +10,6 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.http import require_POST
 
 
 class HomePageView(TemplateView):
@@ -62,15 +61,9 @@ class PostsListView(ListView):
         context = super().get_context_data(object_list=posts, **kwargs)
         context['section'] = section
         context['latest_posts'] = Post.objects.all()[:5]
-        # context['categories'] = Category.objects.all()
-        # if 'category' in locals():
-        #     context['category'] = category
-        # if 'tag' in locals():
-        #     context['tags'] = tag
         return context
 
     def post(self, request, *args, **kwargs):
-        # if request.method == "POST":
         post_id = request.POST.get('post_id')
         action = request.POST.get('action')
         if post_id and action:
@@ -168,7 +161,6 @@ def post_create(request):
                   'posts/create.html',
                   {'form': form,
                    'section': 'create_post'})
-
 
 # @require_POST
 # def like_dislike(request):
