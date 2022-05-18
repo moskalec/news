@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from posts.models import Post, Comment, Tag, Category
 
 
-class __AbstractModelTest(TestCase):
+class _AbstractModelTest:
     model = None
 
     def setUp(self):
@@ -13,8 +13,6 @@ class __AbstractModelTest(TestCase):
     def tearDown(self):
         self.model.objects.all().delete()
 
-
-class _TestBasicFunctionalityMixin:
     def test_object_str(self):
         self.assertEqual(self.obj.title, 'test')
 
@@ -24,15 +22,15 @@ class _TestBasicFunctionalityMixin:
         self.assertEqual(instance.title, self.obj.title)
 
 
-class PostModelTest(__AbstractModelTest, _TestBasicFunctionalityMixin):
+class PostModelTest(_AbstractModelTest, TestCase):
     model = Post
 
 
-class TagModelTest(__AbstractModelTest, _TestBasicFunctionalityMixin):
+class TagModelTest(_AbstractModelTest, TestCase):
     model = Tag
 
 
-class CategoryModelTest(__AbstractModelTest, _TestBasicFunctionalityMixin):
+class CategoryModelTest(_AbstractModelTest, TestCase):
     model = Category
 
 
@@ -41,6 +39,11 @@ class CommentModelTest(TestCase):
         self.user = User.objects.create_user(username='user', email='test@test.test', password='qwerty')
         self.post = Post.objects.create(title='test')
         self.comment = Comment.objects.create(**{'user': self.user, 'post': self.post})
+
+    def tearDown(self):
+        User.objects.all().delete()
+        Post.objects.all().delete()
+        Comment.objects.all().delete()
 
     def test_comment_str(self):
         self.assertEquals(str(self.comment), f'Comment by {self.user} on {self.post}')

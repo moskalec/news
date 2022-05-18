@@ -4,9 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from urllib import request
 from django.core.files.base import ContentFile
 from django.utils.text import slugify
-import urllib.parse
-from urllib.parse import quote
-from urllib.parse import urlparse
 
 
 class CreatePostForm(forms.ModelForm):

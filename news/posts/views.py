@@ -2,14 +2,16 @@ from django.views.generic.base import TemplateView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib import messages
-from slugify import slugify
 from django.http import HttpResponseRedirect
-from posts.forms import CreatePostForm, CreateCommentForm
-from posts.models import Post, Category, Comment, Tag
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
+from django.utils.decorators import method_decorator
+
+from slugify import slugify
+
+from posts.forms import CreatePostForm, CreateCommentForm
+from posts.models import Post, Category, Comment, Tag
 
 
 class HomePageView(TemplateView):
@@ -17,10 +19,10 @@ class HomePageView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_posts'] = Post.objects.all().order_by('-created')[1:5]
-        context['featured_post'] = Post.objects.all().order_by('-like').first()
-        context['categories'] = Category.objects.all().order_by('-title')
-        context['tags'] = Tag.objects.all().order_by('-title')
+        context['latest_posts'] = Post.latest.all()
+        context['featured_post'] = Post.featured.all()
+        context['categories'] = Category.objects.all()
+        context['tags'] = Tag.objects.all()
         context['section'] = 'home'
         return context
 
@@ -28,18 +30,9 @@ class HomePageView(TemplateView):
 class CategoriesListView(ListView):
     model = Category
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        return context
-
 
 class CategoryDetailView(DetailView):
     model = Category
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
 
 
 class PostsListView(ListView):
@@ -63,6 +56,7 @@ class PostsListView(ListView):
         context['latest_posts'] = Post.objects.all()[:5]
         return context
 
+    @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
         post_id = request.POST.get('post_id')
         action = request.POST.get('action')
@@ -84,13 +78,14 @@ class PostsListView(ListView):
                 return redirect(request.POST.get('current'))
             except Exception:
                 pass
-        return HttpResponseRedirect(reverse('posts:index'))
 
 
 class PostDetailView(DetailView):
     model = Post
     form_class = CreateCommentForm
+    template_name = 'posts/post_detail.html'
 
+    @method_decorator(login_required)
     def post(self, request, *args, **kwargs):
         post_id = request.POST.get('post_id')
         action = request.POST.get('action')
@@ -113,29 +108,31 @@ class PostDetailView(DetailView):
                 pass
             return redirect(request.POST.get('current'))
 
-        form = self.form_class(request.POST)
-        if form.is_valid():
-            try:
-                parent_id = int(request.POST.get('parent_id'))
-            except Exception:
-                parent_id = None
-            if parent_id:
-                parent_obj = Comment.objects.get(id=parent_id)
-                if parent_obj:
-                    replay_comment = form.save(commit=False)
-                    replay_comment.parent = parent_obj
-            new_comment = form.save(commit=False)
-            new_comment.post = self.get_object()
-            new_comment.user = request.user
-            new_comment.save()
+        form = self.form_class()
+        if action and action == 'comment':
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                try:
+                    parent_id = int(request.POST.get('parent_id'))
+                except Exception:
+                    parent_id = None
+                if parent_id:
+                    parent_obj = Comment.objects.get(id=parent_id)
+                    if parent_obj:
+                        replay_comment = form.save(commit=False)
+                        replay_comment.parent = parent_obj
+                new_comment = form.save(commit=False)
+                new_comment.post = self.get_object()
+                new_comment.user = request.user
+                new_comment.save()
 
+                return HttpResponseRedirect(self.request.path_info)
             return HttpResponseRedirect(self.request.path_info)
-
         return render(request, self.template_name, {'form': form})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['comments'] = Comment.objects.filter(active=True)
+        context['comments'] = Comment.objects.filter(active=True, post_id=self.object.id)
         context['comment_form'] = self.form_class()
         return context
 

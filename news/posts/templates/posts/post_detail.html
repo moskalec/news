@@ -54,6 +54,7 @@
             <form action="." method="post">
                 {{ comment_form.as_p }}
                 {% csrf_token %}
+                <input type="hidden" name="action" value="comment">
                 <input type="hidden" name="parent_id" value="{{ comment.id }}">
                 <input class="btn btn-primary" type="submit" value="Replay">
             </form>
