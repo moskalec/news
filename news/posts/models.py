@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -16,6 +18,7 @@ class PublicationBaseModel(BaseModel):
     )
     slug = models.SlugField(
         max_length=200,
+        blank=True,
         unique=True,
         verbose_name=_('Slug')
     )
@@ -111,6 +114,20 @@ class Post(PublicationBaseModel):
     featured = FeaturedPostManager()
     latest = LatestPostManager()
 
+    def _get_unique_slug(self):
+        slug = slugify(self.title)
+        unique_slug = slug
+        num = 1
+        while Post.objects.filter(slug=unique_slug).exists():
+            unique_slug = '{}-{}'.format(slug, num)
+            num += 1
+        return unique_slug
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._get_unique_slug()
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
         return reverse('posts:post-detail', kwargs={'slug': self.slug})
 
@@ -126,9 +143,10 @@ class Comment(BaseModel):
         on_delete=models.DO_NOTHING,
         related_name='comments'
     )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.DO_NOTHING,
+    author_name = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        related_name='comments',
+        on_delete=models.SET_NULL,
         null=True
     )
     content = models.TextField()
@@ -156,7 +174,7 @@ class Comment(BaseModel):
         verbose_name_plural = _('comments')
 
     def __str__(self):
-        return f'Comment by {self.user} on {self.post}'
+        return f'Comment by {self.author_name} on {self.post}'
 
 
 class UserPostRelation(models.Model):

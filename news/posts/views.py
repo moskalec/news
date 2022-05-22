@@ -123,7 +123,7 @@ class PostDetailView(DetailView):
                         replay_comment.parent = parent_obj
                 new_comment = form.save(commit=False)
                 new_comment.post = self.get_object()
-                new_comment.user = request.user
+                new_comment.author_name = request.user
                 new_comment.save()
 
                 return HttpResponseRedirect(self.request.path_info)

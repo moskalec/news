@@ -1,53 +1,49 @@
-# from rest_framework.serializers import ModelSerializer
-# from posts.models import Post, UserPostRelation, Comment
-# from rest_framework import serializers
-
-
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
-from posts.models import Post
+from posts.models import Post, Category, Tag, Comment
 
 
-class PostsSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['title', ]
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+    posts = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='title'
+    )
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'posts']
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author_name = serializers.ReadOnlyField(source='author_name.username')
+    category = serializers.ReadOnlyField(source='post.title')
+    slug = serializers.ReadOnlyField(source='post.slug')
+
     class Meta:
         model = Post
-        fields = ['title', 'slug', 'content', 'image', 'url', 'category', 'tags']
+        fields = ['slug', 'title', 'content', 'image', 'author_name',
+                  'url', 'category']
 
-
-# class GroupSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Group
-#         fields = ['url', 'name']
-
-
-
-# class CommentSerializer(ModelSerializer):
-#     class Meta:
-#         model = Comment
-#         fields = ('content', 'creation_date', 'user')
-#
-#
-# class PostsSerializer(ModelSerializer):
-#     amount_of_upvotes = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Post
-#         fields = ('id', 'title', 'link', 'creation_date', 'author_name', 'amount_of_upvotes')
-#         # exclude = ('comments',)
-#
-#     def get_amount_of_upvotes(self, instance):
-#         return UserPostRelation.objects.filter(post=instance, upvote=True).count()
-#
-#
-# class PostDetailSerializer(ModelSerializer):
-#     comments = CommentSerializer(source='comments.content', required=False)
-#
-#     class Meta:
-#         model = Post
-#         fields = ('id', 'title', 'link', 'creation_date', 'author_name', 'amount_of_upvotes', 'comments')
-#
-#
 # class UserPostsRelationViewSerializer(ModelSerializer):
 #     class Meta:
 #         model = UserPostRelation

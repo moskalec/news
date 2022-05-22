@@ -38,7 +38,7 @@ class CommentModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='user', email='test@test.test', password='qwerty')
         self.post = Post.objects.create(title='test')
-        self.comment = Comment.objects.create(**{'user': self.user, 'post': self.post})
+        self.comment = Comment.objects.create(**{'author_name': self.user, 'post': self.post})
 
     def tearDown(self):
         User.objects.all().delete()

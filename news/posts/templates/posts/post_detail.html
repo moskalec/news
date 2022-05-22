@@ -45,7 +45,7 @@
 </ul>
 {% for comment in comments %}
     comment: {{ comment.content|linebreaks }}
-    author: {{ comment.user|linebreaks }}
+    author: {{ comment.author_name|linebreaks }}
     {% for replay in comment.replies.all %}
         <p class="info">{{ replay.title }} | {{ replay.created }}</p>
         <li>{{ replay.content }}</li>

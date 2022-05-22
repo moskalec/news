@@ -147,7 +147,7 @@ class PostCommentTest(TestCase):
         }
         self.client.post(path=url, data=form_data)
         self.assertEqual(self.post.comments.count(), 1)
-        self.assertEqual(self.post.comments.first().user, self.user)
+        self.assertEqual(self.post.comments.first().author_name, self.user)
 
         form_data = {
             'content': 'test',
@@ -156,7 +156,7 @@ class PostCommentTest(TestCase):
         }
         self.client.post(path=url, data=form_data)
         self.assertEqual(self.post.comments.count(), 2)
-        self.assertEqual(self.post.comments.last().user, self.user)
+        self.assertEqual(self.post.comments.last().author_name, self.user)
         self.assertEqual(self.post.comments.last().id, 2)
         self.assertEqual(self.post.comments.last().parent_id, self.post.comments.first().id)
 

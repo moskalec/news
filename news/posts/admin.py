@@ -5,20 +5,19 @@ from posts.models import Post, UserPostRelation, Comment, Category, Tag
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created', 'updated', 'author_name', 'content']
+    list_display = ['title', 'created', 'updated', 'author_name', 'content', 'active']
     list_filter = ['title', 'created', 'updated']
-    # prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['title', 'description']
+    list_display = ['title', 'description', 'active']
     prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug']
+    list_display = ['title', 'slug', 'active']
     prepopulated_fields = {'slug': ('title',)}
 
 
