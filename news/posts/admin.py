@@ -1,12 +1,13 @@
 from django.contrib import admin
 
-from posts.models import Post, UserPostRelation, Comment, Category, Tag
+from posts.models import Post, Comment, Category, Tag
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created', 'updated', 'author_name', 'content', 'active']
-    list_filter = ['title', 'created', 'updated']
+    list_display = ['title', 'created', 'updated', 'author_name', 'active']
+    list_filter = ['title', 'created']
+    search_fields = ['title', ]
 
 
 @admin.register(Category)
@@ -26,8 +27,3 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('post', 'created', 'active')
     list_filter = ('active', 'created', 'updated')
     search_fields = ('user', 'content')
-
-
-@admin.register(UserPostRelation)
-class UserPostRelation(admin.ModelAdmin):
-    pass

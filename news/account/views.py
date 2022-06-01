@@ -1,31 +1,35 @@
-from django.http import HttpResponse
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, UserRegistrationForm, UserEditForm, ProfileEditForm
+from .forms import UserEditForm, ProfileEditForm, UserRegistrationForm
 from .models import Profile, Contact
 from django.contrib import messages
 from django.views.generic.detail import DetailView
-from django.contrib.auth.models import User
 from django.views.generic.list import ListView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView
+from django.contrib.auth import login
+from django.views.generic.edit import UpdateView
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
-def register(request):
-    if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        if user_form.is_valid():
-            new_user = user_form.save(commit=False)
-            new_user.set_password(user_form.cleaned_data['password'])
-            new_user.save()
-            Profile.objects.create(user=new_user)
-            return render(request,
-                          'account/register_done.html',
-                          {'new_user': new_user})
-    else:
-        user_form = UserRegistrationForm()
-    return render(request, 'account/register.html', {'user_form': user_form})
+class UserRegistrationView(CreateView):
+    template_name = 'account/user/registration.html'
+    form_class = UserRegistrationForm
+    success_url = reverse_lazy('account:dashboard')
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        cd = form.cleaned_data
+        user = User.objects.get(username=cd['username'])
+        Profile.objects.create(user=user)
+
+        login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
+        return result
 
 
 @login_required
@@ -35,79 +39,41 @@ def dashboard(request):
                   {'section': 'dashboard'})
 
 
-def user_login(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            user = authenticate(request,
-                                username=cd['username'],
-                                password=cd['password'])
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return HttpResponse('Authenticated successfully')
-                else:
-                    return HttpResponse('Disabled account')
-            else:
-                return HttpResponse('Invalid login')
-    else:
-        form = LoginForm()
-    return render(request, 'account/login.html', {'form': form})
+class UserProfileEditView(UpdateView):
+    template_name = 'account/edit.html'
+    model = get_user_model()
+    exclude = ('password',)
+    form_class = UserEditForm
 
+    def get_object(self, queryset=None):
+        return get_object_or_404(self.model, username=self.request.user.username)
 
-@login_required
-def edit(request):
-    if request.method == 'POST':
-        user_form = UserEditForm(instance=request.user,
-                                 data=request.POST)
-        profile_form = ProfileEditForm(
-            instance=request.user.profile,
-            data=request.POST,
-            files=request.FILES)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_form'] = UserEditForm(instance=self.object)
+        context['profile_form'] = ProfileEditForm(instance=self.object.profile)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        context = super().post(request)
+        user_form = UserEditForm(instance=request.user, data=request.POST)
+        profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST, files=request.FILES)
+
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
             messages.success(request, 'Profile updated successfully')
         else:
             messages.error(request, 'Error updating your profile')
-    else:
-        user_form = UserEditForm(instance=request.user)
-        profile_form = ProfileEditForm(
-            instance=request.user.profile)
-    return render(request,
-                  'account/edit.html',
-                  {'user_form': user_form,
-                   'profile_form': profile_form})
-
-
-# @require_POST
-# def user_follow(request):
-#     if request.method == "POST":
-#         user_id = request.POST.get('user_id')
-#         action = request.POST.get('action')
-#         if user_id and action:
-#             try:
-#                 user = User.objects.get(id=user_id)
-#                 if action == 'follow':
-#                     Contact.objects.get_or_create(
-#                         user_from=request.user,
-#                         user_to=user)
-#                 else:
-#                     Contact.objects.filter(user_from=request.user,
-#                                            user_to=user).delete()
-#                 return HttpResponseRedirect(user.get_absolute_url())
-#             except Exception:
-#                 pass
-#         return HttpResponseRedirect(reverse('posts:index'))
+        return context
 
 
 class UserDetailView(DetailView):
     template_name = 'account/user/detail.html'
-    model = User
+    model = get_user_model()
     slug_field = 'username'
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         user_id = request.POST.get('user_id')
         action = request.POST.get('action')
         if user_id and action:

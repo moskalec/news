@@ -1,8 +1,11 @@
 {% extends "core/base.html" %}
+{% load thumbnail %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <h1>Dashboard</h1>
-<p>Welcome to your dashboard.
+<img src="{% thumbnail user.profile.photo 180x180 %}">
+<p>Your posts: </p>
+<p>Welcome {{ user }} to your dashboard.
     You can <a href="{% url 'account:edit' %}">edit your profile</a> or
-    <a href="{% url 'account:password_change' %}">change your password</a>.</p>
+    <a href="{% url 'password_change' %}">change your password</a>.</p>
 {% endblock %}

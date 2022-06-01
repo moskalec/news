@@ -1,23 +1,23 @@
 from django.urls import path
-
-from .views import PostsListView, PostDetailView, HomePageView, CategoriesListView
 from django.conf import settings
 from django.conf.urls.static import static
 
-from . import views
+from posts import views
 
 app_name = 'posts'
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name='index'),
-    # path('like/', views.like_dislike, name='like_dislike'),
-    # path('like/', PostsListView.as_view(), name='like_dislike'),
-    path('posts', PostsListView.as_view(), name='post-list'),
-    path('category/', CategoriesListView.as_view(), name='category-list'),
-    path('create/', views.post_create, name='create'),
-    path('tag/<slug:tag_slug>/', PostsListView.as_view(), name='post-list'),
-    path('category/<slug:category_slug>/', PostsListView.as_view(), name='post-list'),
-    path('<slug:slug>/', PostDetailView.as_view(), name='post-detail'),
+    path('', views.HomePageView.as_view(), name='index'),
+    path('posts', views.PostsListView.as_view(), name='post-list'),
+    path('category/', views.CategoriesListView.as_view(), name='category-list'),
+    path('tag/', views.TagDetailView.as_view(), name='tags-list'),
+    path('tag/<slug:tag_slug>/', views.TagsListView.as_view(), name='tag-detail'),
+    path('category/<slug:slug>/', views.CategoryDetailView.as_view(), name='category-detail'),
+    path('mine/', views.ManagePostListView.as_view(), name='manage_post_list'),
+    path('create/', views.PostCreateView.as_view(), name='post_create'),
+    path('<slug:slug>/', views.PostDetailView.as_view(), name='post-detail'),
+    path('<slug:slug>/edit/', views.PostUpdateView.as_view(), name='post_edit'),
+    path('<slug:slug>/delete/', views.PostDeleteView.as_view(), name='post_delete'),
 ]
 
 if settings.DEBUG:

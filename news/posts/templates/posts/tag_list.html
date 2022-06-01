@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+{% block title %}
+Posts by tag
+{% endblock %}
+{% block content %}
+<ul>
+{% for tag in tags %}
+            <a href="{{ tag.get_absolute_url }}">{{ tag.title }}</a>
+            | {{ tag.description }}
+    <br>
+{% endfor %}
+</ul>
+<a href="{% url 'posts:post_create' %}">create post</a>
+{% endblock %}
+

@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from posts.models import Post, Category, Tag, Comment
@@ -36,13 +36,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author_name = serializers.ReadOnlyField(source='author_name.username')
-    category = serializers.ReadOnlyField(source='post.title')
-    slug = serializers.ReadOnlyField(source='post.slug')
+    category = serializers.ReadOnlyField(source='category.title')
 
     class Meta:
         model = Post
-        fields = ['slug', 'title', 'content', 'image', 'author_name',
-                  'url', 'category']
+        fields = ['slug', 'title', 'content', 'image', 'author_name', 'category']
 
 # class UserPostsRelationViewSerializer(ModelSerializer):
 #     class Meta:

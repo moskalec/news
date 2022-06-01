@@ -1,11 +1,6 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-Categories:
-{% for category in categories %}
-    <a href="{{ category.get_absolute_url }}">{{ category }}</a>
-{% endfor %}
-<br>
 Tags:
 {% for tag in tags %}
     <a href="{{ tag.get_absolute_url }}">{{ tag }}</a>
@@ -21,4 +16,5 @@ latest_posts:
 </ul>
 <br>
 All posts: <a href="{% url 'posts:post-list' %}">posts</a>
+
 {% endblock %}

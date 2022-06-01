@@ -1,18 +1,22 @@
 from django import forms
-from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
 
 from .models import Profile
 
+User = get_user_model()
+
 
 class UserRegistrationForm(forms.ModelForm):
-    password = forms.CharField(label='Password',
+    username = forms.CharField(label=_('Username'), )
+    password = forms.CharField(label=_('Password'),
                                widget=forms.PasswordInput)
-    password2 = forms.CharField(label='Repeat password',
+    password2 = forms.CharField(label=_('Password'),
                                 widget=forms.PasswordInput)
 
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'email')
+        fields = ('username', 'email', 'password', 'password2')
 
     def clean_password2(self):
         cd = self.cleaned_data
@@ -21,15 +25,10 @@ class UserRegistrationForm(forms.ModelForm):
         return cd['password2']
 
 
-class LoginForm(forms.Form):
-    username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput)
-
-
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email')
+        fields = ('username', 'first_name', 'last_name', 'email')
 
 
 class ProfileEditForm(forms.ModelForm):

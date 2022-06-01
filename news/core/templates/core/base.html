@@ -1,16 +1,40 @@
 <!DOCTYPE html>
+{% load nav_tags %}
 {% load static %}
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-<!--    <link rel="stylesheet" href="{% static 'custom/login.css' %}">-->
     <title>{% block title %}{% endblock %}</title>
 </head>
-<body>
+<body class="d-flex flex-column h-100">
 {% include 'core/includes/navigation.html' %}
-{% include 'core/includes/messages.html' %}
-{% block content %}
-{% endblock %}
+<main class="flex-shrink-0">
+  <div class="container">
+    <div class="row">
+        <div class="col-10">
+            {% block content %}
+            {% endblock %}
+        </div>
+        <div class="col-2">
+            <div>
+                {% featured_post %}
+            </div>
+            <div>
+                {% latest_posts %}
+            </div>
+        </div>
+    </div>
+  </div>
+</main>
+{% include 'core/includes/footer.html' %}
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function(){
+        {% block domready %}
+        {% endblock %}
+    });
+</script>
 </body>
 </html>

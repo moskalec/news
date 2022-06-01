@@ -11,18 +11,15 @@ class Profile(models.Model):
     photo = models.ImageField(upload_to='users/%Y/%m/%d/',
                               blank=True)
 
-    # def get_absolute_url(self):
-    #     return reverse('account:dashboard', kwargs={'slug': self.slug})
-
     def __str__(self):
         return f'Profile for user {self.user.username}'
 
 
 class Contact(models.Model):
-    user_from = models.ForeignKey('auth.User',
+    user_from = models.ForeignKey(settings.AUTH_USER_MODEL,
                                   related_name='rel_from_set',
                                   on_delete=models.DO_NOTHING)
-    user_to = models.ForeignKey('auth.User',
+    user_to = models.ForeignKey(settings.AUTH_USER_MODEL,
                                 related_name='rel_to_set',
                                 on_delete=models.DO_NOTHING)
     created = models.DateTimeField(auto_now_add=True,
@@ -37,7 +34,7 @@ class Contact(models.Model):
 
 user_model = get_user_model()
 user_model.add_to_class('following',
-                        models.ManyToManyField('self',
+                        models.ManyToManyField(settings.AUTH_USER_MODEL,
                                                through=Contact,
                                                related_name='followers',
                                                symmetrical=False))

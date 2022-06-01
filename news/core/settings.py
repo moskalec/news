@@ -15,10 +15,12 @@ from django.contrib.messages import constants as messages
 from django.urls import reverse_lazy
 
 
-ABSOLUTE_URL_OVERRIDES = {
-       'auth.user': lambda u: reverse_lazy('account:user_detail',
-                                           kwargs={'slug': u.username})
-}
+# ABSOLUTE_URL_OVERRIDES = {
+#        'auth.user': lambda u: reverse_lazy('account:user_detail',
+#                                            kwargs={'slug': u.username})
+# }
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = os.path.join(BASE_DIR, '..')
@@ -50,12 +52,14 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    # 'api',
+    'debug_toolbar',
+    'api',
     'core',
     'posts',
 
     'easy_thumbnails',
     'django_extensions',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -66,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -131,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # LANGUAGE_CODE = 'en-us'
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Kiev'
 
 USE_I18N = True
 
@@ -140,14 +145,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, '_static')
 STATIC_URL = 'static/'
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 MEDIA_URL = 'media/'
 
 LOGIN_REDIRECT_URL = '/'
-LOGIN_URL = 'account:login'
-LOGOUT_URL = 'account:logout'
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -164,6 +169,8 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
+AUTH_USER_MODEL = 'core.User'
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'account.authentication.EmailAuthBackend',
@@ -176,3 +183,8 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE': 2,
 }
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

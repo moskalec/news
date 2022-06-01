@@ -5,8 +5,13 @@
 {% block content %}
 
 <h1>{{ category.title }}!</h1>
-| {{ category.description }}
+<p>Description: {{ category.description }}</p>
     <br>
-<a href="{% url 'posts:create' %}">create post</a>
+{% with posts=category.category_posts.all %}
+    {% for post in posts %}
+        <a href="{{ post.get_absolute_url }}">{{ post.title|linebreaks }}</a>
+    {% endfor %}
+{% endwith %}
+<a href="{% url 'posts:post_create' %}">create post</a>
 {% endblock %}
 

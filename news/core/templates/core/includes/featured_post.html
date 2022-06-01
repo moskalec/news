@@ -1,0 +1,9 @@
+{% load thumbnail %}
+<h5>Featured post:</h5>
+<ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ featured.get_absolute_url }}">{{ featured|truncatechars:12 }}</a>
+        <span class="badge bg-primary rounded-pill">{{ featured.like.count }}</span>
+      </li>
+</ul>
+
