@@ -44,3 +44,5 @@ coverage.xml
 venv/
 ENV/
 USAGE
+/news/core/settings/local.py
+/news/core/settings/pro.py

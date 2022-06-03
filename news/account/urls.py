@@ -14,7 +14,6 @@ urlpatterns = [
     path('users/<slug:slug>/', UserDetailView.as_view(), name='user_detail'),
     path('register/', views.UserRegistrationView.as_view(), name='register'),
     path('edit/', views.UserProfileEditView.as_view(), name='edit'),
-
 ]
 
 if settings.DEBUG:

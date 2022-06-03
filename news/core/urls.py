@@ -4,15 +4,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
+from .forms import PasswordResetFormCelery
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('account/', include('account.urls')),
     path('api/v1/', include(('api.urls', 'api'), namespace='api')),
-    path('', include('django.contrib.auth.urls')),
-    path('', include('posts.urls', namespace='posts')),
-
     path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
+    path('password_reset/', auth_views.PasswordResetView.as_view(form_class=PasswordResetFormCelery),
+         name='password_reset'),
+    path('', include('django.contrib.auth.urls')),
+    path('', include('posts.urls', namespace='posts')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

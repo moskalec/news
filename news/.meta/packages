@@ -9,6 +9,8 @@ django-extensions==3.1.5
 django-filter==21.1
 djangorestframework==3.13.1
 easy-thumbnails==2.8.1
+flake8==4.0.1
+flower==1.0.0
 ipdb==0.13.9
 Jinja2==3.1.2
 Markdown==3.3.7
