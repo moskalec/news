@@ -15,7 +15,7 @@ class BasePageViewMixin(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['latest_posts'] = Post.latest.all()
-        context['featured_post'] = Post.featured.all()
+        context['featured_post'] = Post.objects.order_by('-total_likes').first()
         context['categories'] = Category.objects.all()
         context['tags'] = Tag.objects.all()
         context['section'] = 'home'

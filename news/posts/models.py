@@ -64,9 +64,9 @@ class Category(PublicationBaseModel):
         ordering = ('-title',)
 
 
-class FeaturedPostManager(models.Manager):
-    def get_queryset(self):
-        return super(FeaturedPostManager, self).get_queryset().order_by('-like').first()
+# class FeaturedPostManager(models.Manager):
+#     def get_queryset(self):
+#         return super(FeaturedPostManager, self).get_queryset().order_by('-total_likes').first()
 
 
 class LatestPostManager(models.Manager):
@@ -115,8 +115,12 @@ class Post(PublicationBaseModel):
         related_name='tags'
     )
     objects = models.Manager()
-    featured = FeaturedPostManager()
+    # featured = FeaturedPostManager()
     latest = LatestPostManager()
+    total_likes = models.PositiveIntegerField(
+        db_index=True,
+        default=0
+    )
 
     def get_absolute_url(self):
         return reverse('posts:post-detail', kwargs={'slug': self.slug})

@@ -9,3 +9,5 @@ class PostsConfig(AppConfig):
     #     print('Ready....')
     #     from .posts_scheduler import posts_updater
     #     posts_updater.start()
+    def ready(self):
+        import posts.signals

@@ -34,9 +34,13 @@ class UserRegistrationView(CreateView):
 
 @login_required
 def dashboard(request):
+    context = {
+        'section': 'people',
+        'followers': Contact.objects.filter(user_to=request.user)
+    }
     return render(request,
                   'account/dashboard.html',
-                  {'section': 'dashboard'})
+                  context=context)
 
 
 class UserProfileEditView(UpdateView):

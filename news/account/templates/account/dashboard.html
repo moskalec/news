@@ -4,8 +4,17 @@
 {% block content %}
 <h1>Dashboard</h1>
 <img src="{% thumbnail user.profile.photo 180x180 %}">
-<p>Your posts: </p>
-<p>Welcome {{ user }} to your dashboard.
+<a href="{% url 'posts:manage_post_list' %}">Your posts</a></p>
+<p>Welcome {{ user }} to your dashboard
     You can <a href="{% url 'account:edit' %}">edit your profile</a> or
-    <a href="{% url 'password_change' %}">change your password</a>.</p>
+    <a href="{% url 'password_change' %}">change your password</a></p>
+<hr>
+Contacts log:<br>
+{% for follower in followers %}
+    <a href="{{ follower.user_from.get_absolute_url }}">{{ follower.user_from }}</a>
+    start follow
+    <a href="{{ follower.user_to.get_absolute_url }}">{{ follower.user_to }}</a>
+    since {{ follower.created }}
+{% endfor %}
+<hr>
 {% endblock %}
