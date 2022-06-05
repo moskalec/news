@@ -1,0 +1,9 @@
+{% load thumbnail %}
+<h5>Most viwed post:</h5>
+<ul class="list-group">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{{ most_viewed.get_absolute_url }}">{{ most_viewed|truncatechars:12 }}</a>
+        <span class="badge bg-primary rounded-pill">{{ featured.like.count }}</span>
+      </li>
+</ul>
+

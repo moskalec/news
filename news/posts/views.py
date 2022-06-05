@@ -6,9 +6,17 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.conf import settings
 
 from posts.forms import CreatePostForm, CreateCommentForm
 from posts.models import Post, Category, Comment, Tag
+import redis
+
+r = redis.Redis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB
+)
 
 
 class BasePageViewMixin(TemplateView):
@@ -133,6 +141,8 @@ class PostDetailView(DetailView, LikeDislikeMixin):
         context = super().get_context_data(**kwargs)
         context['comments'] = Comment.objects.filter(active=True, post_id=self.object.id)
         context['comment_form'] = self.form_class()
+        context['total_views'] = r.incr(f'post:{self.get_object().id}:views')
+        r.zincrby('post_ranking', 1, self.get_object().id)
         return context
 
 
