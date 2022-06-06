@@ -1,11 +1,13 @@
 {% extends 'core/base.html' %}
 {% block title %}
-Tags
+Categories
 {% endblock %}
 {% block content %}
 <ul>
-{% for tag in object_list %}
-            <li><a href="{{ tag.get_absolute_url }}">{{ tag.title }}</a></li>
+{% for category in object_list %}
+            <a href="{{ category.get_absolute_url }}">{{ category.title }}</a>
+            {{ category.description }}
+    <br>
 {% endfor %}
 </ul>
 <a href="{% url 'posts:post_create' %}">create post</a>

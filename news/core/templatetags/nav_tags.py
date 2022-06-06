@@ -1,5 +1,6 @@
 from django import template
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from posts.models import Post, Category
 
@@ -28,8 +29,9 @@ def featured_post():
 @register.inclusion_tag('core/includes/most_viewed_post.html')
 def most_viewed_post():
     post_ranking_id = r.zrevrange('post_ranking', 0, 0)
-    most_viewed = Post.objects.get(id=int(post_ranking_id.pop()))
+    post_ranking_id = [int(id) for id in post_ranking_id]
 
+    most_viewed = Post.objects.get(id=post_ranking_id[0])
     return {'most_viewed': most_viewed}
 
 

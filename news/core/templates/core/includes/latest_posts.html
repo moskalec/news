@@ -1,3 +1,4 @@
+{% if latest %}
 <h5>Last five posts:</h5>
 <ul class="list-group">
     {% for post in latest %}
@@ -7,3 +8,4 @@
       </li>
     {% endfor %}
 </ul>
+{% endif %}

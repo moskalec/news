@@ -46,7 +46,7 @@ class PublicationBaseModel(BaseModel):
 class Tag(PublicationBaseModel):
 
     def get_absolute_url(self):
-        return reverse('posts:tag-detail', kwargs={'tag_slug': self.slug})
+        return reverse('posts:tag-detail', kwargs={'slug': self.slug})
 
     class Meta:
         ordering = ('-title',)
@@ -112,7 +112,7 @@ class Post(PublicationBaseModel):
     )
     tags = models.ManyToManyField(
         Tag,
-        related_name='tags'
+        related_name='tag_posts'
     )
     objects = models.Manager()
     # featured = FeaturedPostManager()

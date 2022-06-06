@@ -1,6 +1,6 @@
 from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
-from django.contrib.auth.models import User
+from core.models import User
 
 from posts.forms import CreateCommentForm
 from posts.models import Post, Tag, Category
@@ -9,10 +9,13 @@ from posts.models import Post, Tag, Category
 class _AbstractViewTest:
     model = None
     url_kwargs = None
-    tpl_name = 'posts:post-list'
+    tpl_name = None
 
     def setUp(self):
-        self.obj = self.model.objects.create(**{'title': 'test'})
+        post1 = Post.objects.create(**{'title': 'test'})
+        post2 = Post.objects.create(**{'title': 'test'})
+        post3 = Post.objects.create(**{'title': 'test'})
+        self.obj = self.model.objects.create(**{'title': f'{self.model.__name__.lower()}-test'})
 
     def tearDown(self):
         self.model.objects.all().delete()
@@ -24,33 +27,34 @@ class _AbstractViewTest:
 
 class TagViewsTest(_AbstractViewTest, TestCase):
     model = Tag
-    url_kwargs = {'tag_slug': 'test'}
+    url_kwargs = {'slug': 'tag-test'}
+    tpl_name = 'posts:tag-detail'
 
 
 class CategoryViewsTest(_AbstractViewTest, TestCase):
     model = Category
-    url = {'category_slug': 'test'}
+    url_kwargs = {'slug': 'category-test'}
+    tpl_name = 'posts:category-detail'
 
     def test_page_context(self):
-        response = self.client.get(reverse(self.tpl_name, kwargs=self.url))
+        response = self.client.get(reverse(self.tpl_name, kwargs=self.url_kwargs))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['section'], 'by_category')
 
 
 class PostsViewsTest(_AbstractViewTest, TestCase):
     model = Post
-    url_kwargs = ''
+    tpl_name = 'posts:post-list'
 
 
 class PostDetailViewsTest(_AbstractViewTest, TestCase):
     model = Post
-    url_kwargs = {'slug': 'test'}
+    url_kwargs = {'slug': 'post-test'}
     tpl_name = 'posts:post-detail'
 
 
 class PostDetailLikeDislikeTest(TransactionTestCase):
     model = Post
-    url_kwargs = {'slug': 'test'}
+    url_kwargs = {'slug': 'post-test'}
     tpl_name = 'posts:post-detail'
 
     def setUp(self):
@@ -121,12 +125,14 @@ class PostListLikeDislikeTest(PostDetailLikeDislikeTest):
 
 class PostCommentTest(TestCase):
     model = Post
-    url_kwargs = {'slug': 'test'}
+    url_kwargs = {'slug': 'post-test'}
     tpl_name = 'posts:post-detail'
 
     def setUp(self):
         self.user = User.objects.create_user(username='test', email='test@test.test', password='qwerty')
-        self.post = Post.objects.create(title='test')
+        self.post = Post.objects.create(title='post-test')
+        self.post2 = Post.objects.create(title='test')
+        self.post3 = Post.objects.create(title='test-1')
 
     def test_form(self):
         self.client.force_login(self.user)
@@ -191,10 +197,10 @@ class HomeViewTest(TestCase):
         response = self.client.get(reverse('posts:index'))
         categories = Category.objects.all().order_by('-title')
         tags = Tag.objects.all().order_by('-title')
-        posts = Post.objects.all().order_by('-title')[1:5]
+        posts = Post.objects.all().order_by('-title')[:5]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['section'], 'home')
-        self.assertEqual(response.context['featured_post'], self.post1)
+        self.assertEqual(response.context['featured_post'], self.post5)
         self.assertEqual(response.context['categories'].first(), categories.first())
         self.assertEqual(response.context['categories'].last(), categories.last())
         self.assertEqual(response.context['tags'].first(), tags.first())
