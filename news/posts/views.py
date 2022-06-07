@@ -1,12 +1,13 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
+from django.core.cache import cache
 from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
-from django.shortcuts import render, redirect
-from django.urls import reverse_lazy, reverse
-from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.conf import settings
+from django.views.generic.list import ListView
+from django.urls import reverse_lazy, reverse
 
 from posts.forms import CreatePostForm, CreateCommentForm
 from posts.models import Post, Category, Comment, Tag
@@ -22,7 +23,13 @@ r = redis.Redis(
 class BasePageViewMixin(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_posts'] = Post.latest.all()
+
+        latest_posts = cache.get('latest_posts')
+        if not latest_posts:
+            latest_posts = Post.latest.all()
+            cache.set('latest_posts', latest_posts)
+
+        context['latest_posts'] = latest_posts
         context['featured_post'] = Post.objects.order_by('-total_likes').first()
         context['categories'] = Category.objects.all()
         context['tags'] = Tag.objects.all()
@@ -148,6 +155,7 @@ class PostDetailView(DetailView, LikeDislikeMixin):
 
 class CategoriesListView(ListView):
     model = Category
+    context_object_name = 'categories'
 
 
 class CategoryDetailView(DetailView):

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load nav_tags %}
 {% load static %}
+{% load cache %}
 <html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
@@ -18,13 +19,19 @@
         </div>
         <div class="col-2">
             <div>
-                {% featured_post %}
+                {% cache 600 featured_post_contents featured_post %}
+                    {% featured_post %}
+                {% endcache %}
             </div>
             <div>
-                {% latest_posts %}
+                {% cache 600 latest_posts_contents latest_posts %}
+                    {% latest_posts %}
+                {% endcache %}
             </div>
             <div>
-                {% most_viewed_post %}
+                {% cache 600 most_viewed_post_contents most_viewed_post %}
+                    {% most_viewed_post %}
+                {% endcache %}
             </div>
         </div>
     </div>

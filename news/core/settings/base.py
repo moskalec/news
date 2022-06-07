@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'django_extensions',
     'crispy_forms',
+    'memcache_status',
 ]
 
 MIDDLEWARE = [

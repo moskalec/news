@@ -2,6 +2,8 @@ from django.contrib import admin
 
 from posts.models import Post, Comment, Category, Tag
 
+admin.site.index_template = 'memcache_status/admin_index.html'
+
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
