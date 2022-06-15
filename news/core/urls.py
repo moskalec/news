@@ -14,6 +14,7 @@ urlpatterns = [
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     path('password_reset/', auth_views.PasswordResetView.as_view(form_class=PasswordResetFormCelery),
          name='password_reset'),
+    path('chat/', include('chat.urls', namespace='chat')),
     path('', include('django.contrib.auth.urls')),
     path('', include('posts.urls', namespace='posts')),
 ]

@@ -13,9 +13,6 @@ import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
 
-
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 PROJECT_ROOT = os.path.join(BASE_DIR, '../../..')
@@ -45,11 +42,13 @@ INSTALLED_APPS = [
     'api',
     'core',
     'posts',
+    'chat',
 
     'easy_thumbnails',
     'django_extensions',
     'crispy_forms',
     'memcache_status',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -176,5 +175,15 @@ INTERNAL_IPS = [
 ]
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+ASGI_APPLICATION = 'core.routing.application'
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [('127.0.0.1', 6379)],
+#         },
+#     },
+# }

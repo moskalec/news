@@ -31,7 +31,12 @@ def most_viewed_post():
     post_ranking_id = r.zrevrange('post_ranking', 0, 0)
     post_ranking_id = [int(id) for id in post_ranking_id]
 
-    most_viewed = Post.objects.get(id=post_ranking_id[0])
+    # import ipdb
+    # ipdb.set_trace()
+    try:
+        most_viewed = Post.objects.get(id=post_ranking_id[0])
+    except:
+        most_viewed = Post.objects.all().last()
     return {'most_viewed': most_viewed}
 
 

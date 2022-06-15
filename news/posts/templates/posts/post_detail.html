@@ -2,7 +2,7 @@
 {% block title %}{% endblock %}
 {% block content %}
 
-<h1>{{ object.title }}</h1>
+<h1>{{ object.title }}{{ object.id }}</h1>
     {% if object.image %}
         <img src="{{ object.image.url }}" class="img-thumbnail">
     {% endif %}
