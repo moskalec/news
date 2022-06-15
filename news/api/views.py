@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from api.permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
-from api.serializers import UserSerializer, PostSerializer, TagSerializer
+from api.serializers import UserSerializer, PostSerializer, TagSerializer, PostCreateSerializer
 from posts.models import Post, Tag
 from django.http import JsonResponse
 from posts.models import Category
@@ -45,10 +45,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    # serializer_class = PostSerializer
     lookup_field = 'slug'
     permission_classes = [IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PostCreateSerializer
+        return PostSerializer
 
     @action(detail=True,
             methods=['post'],
@@ -76,11 +81,14 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         tags = []
-        for tag in self.request.POST.dict()['tags'].split(","):
-            import ipdb
-            ipdb.set_trace()
+        # import ipdb
+        # ipdb.set_trace()
+        # for tag in self.request.POST.dict()['tags'].split(","):
+        for tag in self.request.data['tags'].split(","):
             obj, _ = Tag.objects.get_or_create(title=tag.strip(), slug=slugify(tag.strip()))
             tags.append(obj)
-        serializer.save(tags=tags)
-        serializer.save(author_name=self.request.user)
-        serializer.save(slug=slugify(self.request.POST.get('title')))
+        # import ipdb
+        # ipdb.set_trace()
+        serializer.save(tags=tags, author_name=self.request.user, slug=slugify(self.request.data.get('title')))
+        # serializer.save(tags=tags, author_name=self.request.user, slug=slugify(self.request.POST.get('title')))
+
